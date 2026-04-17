@@ -77,3 +77,28 @@ Student* rRS(Student* y){
     x->height=1+mx(hS(x->left),hS(x->right));
     return x;
 }
+Student* lRS(Student* x){
+    Student* y=x->right; Student* t=y->left;
+    y->left=x; x->right=t;
+    x->height=1+mx(hS(x->left),hS(x->right));
+    y->height=1+mx(hS(y->left),hS(y->right));
+    return y;
+}
+
+int bfS(Student* n){return n?hS(n->left)-hS(n->right):0;}
+
+Student* insertS(Student* r,Student* s){
+    if(!r) return s;
+    if(s->id<r->id) r->left=insertS(r->left,s);
+    else if(s->id>r->id) r->right=insertS(r->right,s);
+    else return r;
+
+    r->height=1+mx(hS(r->left),hS(r->right));
+    int b=bfS(r);
+
+    if(b>1 && s->id<r->left->id) return rRS(r);
+    if(b<-1 && s->id>r->right->id) return lRS(r);
+    if(b>1 && s->id>r->left->id){r->left=lRS(r->left);return rRS(r);}
+    if(b<-1 && s->id<r->right->id){r->right=rRS(r->right);return lRS(r);}
+    return r;
+}
