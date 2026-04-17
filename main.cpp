@@ -334,8 +334,7 @@ void deleteSubject(string id){
     }
     cout<<"Subject not found\n";
 }
-/* ================= DELETE STUDENT FROM ALL SUBJECTS ================= */
-
+/*  DELETE STUDENT FROM ALL SUBJECTS  */
 void deleteStudentGlobal(string id){
     Subject* c=subjectHead;
     while(c){
@@ -350,4 +349,54 @@ pair<double,int> avg(Enrollment* r){
     if(!r) return {0,0};
     auto L=avg(r->left),R=avg(r->right);
     return {L.first+R.first+r->marks,L.second+R.second+1};
+}
+/* PRINT  */
+void printE(Enrollment* r){
+    if(!r) return;
+    printE(r->left);
+    Student* s=findS(studentRoot,r->studentId);
+    string name=s?s->name:r->studentId;
+    cout<<"  "<<r->studentId<<" ("<<name<<")"<<" -> "<<r->marks<<" ("<<getGrade(r->marks)<<")\n";
+    printE(r->right);
+}
+
+/*  FILE SAVE  */
+void saveStudents(){
+    ofstream f("students.txt");
+    function<void(Student*)> dfs=[&](Student* r){
+        if(!r) return;
+        dfs(r->left);
+        /* FIX: save email field too */
+        f<<r->id<<" "<<r->name<<" "<<r->email<<" "<<r->password<<" "<<r->year<<" "<<r->semester<<"\n";
+        dfs(r->right);
+    };
+    dfs(studentRoot);
+}
+
+void saveTeachers(){
+    ofstream f("teachers.txt");
+    function<void(Teacher*)> dfs=[&](Teacher* r){
+        if(!r) return;
+        dfs(r->left);
+        f<<r->id<<" "<<r->name<<" "<<r->password<<"\n";
+        dfs(r->right);
+    };
+    dfs(teacherRoot);
+}
+
+void saveSubjects(){
+    ofstream f("subjects.txt");
+    Subject* c=subjectHead;
+    while(c){
+        f<<c->id<<" "<<c->name<<" "<<c->teacherId<<" "<<c->year<<" "<<c->semester<<" ";
+        function<void(Enrollment*)> dfs=[&](Enrollment* r){
+            if(!r) return;
+            dfs(r->left);
+            f<<r->studentId<<":"<<r->marks<<" ";
+            dfs(r->right);
+        };
+        dfs(c->root);
+        f<<"\n";
+        c=c->next;
+    }
 }
