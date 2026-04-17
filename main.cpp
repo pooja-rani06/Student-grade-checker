@@ -623,3 +623,65 @@ void adminMenu(){
             saveTeachers();
             cout<<"  Teacher deleted.\n";
         }
+else if(ch==5){
+            string id,name,tid; int y,s;
+            cout<<"  Subject ID: ";cin>>id;
+            /* Check duplicate subject id */
+            Subject* tmp=subjectHead;
+            bool dup=false;
+            while(tmp){ if(tmp->id==id){dup=true;break;} tmp=tmp->next; }
+            if(dup){ cout<<"  Subject ID already exists.\n"; continue; }
+            cout<<"  Name: ";cin>>name;
+            cout<<"  Teacher ID: ";cin>>tid;
+            if(!findT(teacherRoot,tid)){ cout<<"  Teacher not found.\n"; continue; }
+            cout<<"  Year: ";cin>>y;
+            cout<<"  Semester: ";cin>>s;
+            addSubject(subjectHead,newSub(id,name,tid,y,s));
+            saveSubjects();
+            cout<<"  Subject added.\n";
+        }
+
+        else if(ch==6){
+            string id;
+            cout<<"  Subject ID: ";
+            cin>>id;
+            deleteSubject(id);
+            saveSubjects();
+        }
+
+        else if(ch==7){
+            cout<<"\n  --- Students ---\n";
+            function<void(Student*)> pr=[&](Student* r){
+                if(!r) return;
+                pr(r->left);
+                cout<<"  "<<r->id<<" | "<<r->name
+                    <<" | Y"<<r->year<<" S"<<r->semester<<"\n";
+                pr(r->right);
+            };
+            pr(studentRoot);
+        }
+
+        else if(ch==8){
+            cout<<"\n  --- Teachers ---\n";
+            function<void(Teacher*)> pr=[&](Teacher* r){
+                if(!r) return;
+                pr(r->left);
+                cout<<"  "<<r->id<<" | "<<r->name<<"\n";
+                pr(r->right);
+            };
+            pr(teacherRoot);
+        }
+
+        else if(ch==9){
+            cout<<"\n  --- Subjects ---\n";
+            Subject* c=subjectHead;
+            while(c){
+                cout<<"  "<<c->id<<" | "<<c->name
+                    <<" | Teacher: "<<c->teacherId
+                    <<" | Y"<<c->year<<" S"<<c->semester<<"\n";
+                c=c->next;
+            }
+        }
+    }
+}
+
