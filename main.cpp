@@ -439,3 +439,127 @@ void loadSubjects(){
         addSubject(subjectHead,sub);
     }
 }
+/* ================= INPUT HELPERS ================= */
+
+double inputMarks(){
+    double m;
+    while(true){
+        cin>>m;
+        if(m>=0 && m<=100) return m;
+        cout<<"  Invalid marks. Enter value between 0 and 100: ";
+    }
+}
+
+/* ================= MENUS ================= */
+
+void studentMenu(Student* s){
+    cout<<"\n+------------------------------------------+\n";
+    cout<<"  Welcome, "<<s->name<<"  (ID: "<<s->id<<")\n";
+    cout<<"  Year: "<<s->year<<"  |  Semester: "<<s->semester<<"\n";
+    cout<<"+------------------------------------------+\n";
+
+    bool found=false;
+    Subject* c=subjectHead;
+    while(c){
+        /* Only show subjects matching student's year and semester */
+        if(c->year==s->year && c->semester==s->semester){
+            Enrollment* e=findE(c->root,s->id);
+            if(e){
+                found=true;
+                auto a=avg(c->root);
+                double subAvg=a.second?a.first/a.second:0;
+                cout<<"\n  Subject : "<<c->id<<" - "<<c->name<<"\n";
+                cout<<"  Marks   : "<<e->marks<<" | Grade: "<<getGrade(e->marks)<<"\n";
+                cout<<"  ClassAvg: "<<fixed<<setprecision(2)<<subAvg<<"\n";
+            }
+        }
+        c=c->next;
+    }
+    if(!found) cout<<"  No enrollments found.\n";
+    cout<<"+------------------------------------------+\n";
+}
+
+void teacherMenu(Teacher* t){
+    while(true){
+        cout<<"\n+------------------------------------------+\n";
+        cout<<"  Teacher: "<<t->name<<"  (ID: "<<t->id<<")\n";
+        cout<<"+------------------------------------------+\n";
+        cout<<"  Your Subjects:\n";
+
+        Subject* c=subjectHead;
+        bool any=false;
+        while(c){
+            /* FIX: only show subjects assigned to this teacher */
+            if(c->teacherId==t->id){
+                cout<<"  "<<c->id<<" - "<<c->name
+                    <<"  [Y"<<c->year<<" S"<<c->semester<<"]\n";
+                any=true;
+            }
+            c=c->next;
+        }
+        if(!any){ cout<<"  No subjects assigned.\n"; }
+
+        cout<<"\n  Enter Subject ID (or EXIT): ";
+        string id; cin>>id;
+        if(id=="EXIT") return;
+
+        Subject* s=subjectHead;
+        /* FIX: also verify the subject belongs to this teacher */
+        while(s && (s->id!=id || s->teacherId!=t->id)) s=s->next;
+        if(!s){ cout<<"  Invalid subject or not yours.\n"; continue; }
+
+        while(true){
+            cout<<"\n  Subject: "<<s->id<<" - "<<s->name<<"\n";
+            cout<<"  1.View Enrollments  2.Add Marks  3.Update Marks\n";
+            cout<<"  4.Delete Enrollment 5.Class Avg  6.Back\n";
+            cout<<"  Choice: ";
+            int ch; cin>>ch;
+
+            if(ch==6) break;
+
+            if(ch==1){
+                if(!s->root){ cout<<"  No enrollments.\n"; continue; }
+                cout<<"\n  --- Enrollments ---\n";
+                printE(s->root);
+            }
+
+            else if(ch==2){
+                string sid; double m;
+                cout<<"  Student ID: "; cin>>sid;
+                /* Validate student exists */
+                if(!findS(studentRoot,sid)){
+                    cout<<"  Student not found.\n"; continue;
+                }
+                cout<<"  Marks (0-100): "; m=inputMarks();
+                s->root=insertE(s->root,sid,m);
+                saveSubjects();
+                cout<<"  Marks added.\n";
+            }
+
+            else if(ch==3){
+                string sid; double m;
+                cout<<"  Student ID: "; cin>>sid;
+                Enrollment* e=findE(s->root,sid);
+                if(!e){ cout<<"  Enrollment not found.\n"; continue; }
+                cout<<"  New Marks (0-100): "; m=inputMarks();
+                e->marks=m;
+                saveSubjects();
+                cout<<"  Marks updated.\n";
+            }
+
+            else if(ch==4){
+                string sid; cout<<"  Student ID: "; cin>>sid;
+                if(!findE(s->root,sid)){ cout<<"  Enrollment not found.\n"; continue; }
+                s->root=deleteE(s->root,sid);
+                saveSubjects();
+                cout<<"  Enrollment deleted.\n";
+            }
+
+            else if(ch==5){
+                auto a=avg(s->root);
+                cout<<"  Class Average: "<<fixed<<setprecision(2)
+                    <<(a.second?a.first/a.second:0)<<"\n";
+            }
+        }
+    }
+}
