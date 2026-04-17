@@ -334,3 +334,20 @@ void deleteSubject(string id){
     }
     cout<<"Subject not found\n";
 }
+/* ================= DELETE STUDENT FROM ALL SUBJECTS ================= */
+
+void deleteStudentGlobal(string id){
+    Subject* c=subjectHead;
+    while(c){
+        c->root=deleteE(c->root,id);
+        c=c->next;
+    }
+}
+
+/*  AVG  */
+
+pair<double,int> avg(Enrollment* r){
+    if(!r) return {0,0};
+    auto L=avg(r->left),R=avg(r->right);
+    return {L.first+R.first+r->marks,L.second+R.second+1};
+}
