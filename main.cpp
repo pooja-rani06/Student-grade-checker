@@ -684,4 +684,71 @@ else if(ch==5){
         }
     }
 }
+/* ================= MAIN ================= */
 
+int main(){
+
+    /* Load persisted data first */
+    loadStudents();
+    loadTeachers();
+    loadSubjects();
+
+    /* Seed only if files were empty (first run) */
+    if(!studentRoot){
+        studentRoot=insertS(studentRoot,newS("S1","Amit","amit@uni.com","123",2,3));
+        studentRoot=insertS(studentRoot,newS("S2","Ravi","ravi@uni.com","123",2,3));
+    }
+    if(!teacherRoot){
+        teacherRoot=insertT(teacherRoot,newT("T1","Sharma","111"));
+    }
+    if(!subjectHead){
+        Subject* c1=newSub("C1","C++","T1",2,3);
+        c1->root=insertE(c1->root,"S1",90);
+        c1->root=insertE(c1->root,"S2",80);
+        addSubject(subjectHead,c1);
+    }
+
+    while(true){
+        cout<<"\n==========================================\n";
+        cout<<"   STUDENT MANAGEMENT SYSTEM\n";
+        cout<<"==========================================\n";
+        cout<<"  1. Student Login\n";
+        cout<<"  2. Teacher Login\n";
+        cout<<"  3. Admin Panel\n";
+        cout<<"  4. Exit\n";
+        cout<<"  Choice: ";
+        int c; cin>>c;
+
+        if(c==4){
+            saveStudents();
+            saveTeachers();
+            saveSubjects();
+            cout<<"  Data saved. Goodbye!\n";
+            break;
+        }
+
+        if(c==1){
+            string id,p;
+            cout<<"  ID: ";cin>>id;
+            cout<<"  Password: ";cin>>p;
+            Student* s=findS(studentRoot,id);
+            if(s && s->password==p) studentMenu(s);
+            else cout<<"  Invalid ID or password.\n";
+        }
+
+        else if(c==2){
+            string id,p;
+            cout<<"  ID: ";cin>>id;
+            cout<<"  Password: ";cin>>p;
+            Teacher* t=findT(teacherRoot,id);
+            if(t && t->password==p) teacherMenu(t);
+            else cout<<"  Invalid ID or password.\n";
+        }
+
+        else if(c==3){
+            adminMenu();
+        }
+    }
+
+    return 0;
+}
