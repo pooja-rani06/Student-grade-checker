@@ -563,3 +563,63 @@ void teacherMenu(Teacher* t){
         }
     }
 }
+/* ================= ADMIN ================= */
+
+void adminMenu(){
+    while(true){
+        cout<<"\n+------------------------------------------+\n";
+        cout<<"  ADMIN PANEL\n";
+        cout<<"+------------------------------------------+\n";
+        cout<<"  1. Add Student       2. Delete Student\n";
+        cout<<"  3. Add Teacher       4. Delete Teacher\n";
+        cout<<"  5. Add Subject       6. Delete Subject\n";
+        cout<<"  7. List All Students 8. List All Teachers\n";
+        cout<<"  9. List All Subjects 0. Back\n";
+        cout<<"  Choice: ";
+        int ch; cin>>ch;
+
+        if(ch==0) return;
+
+        if(ch==1){
+            string id,name,email,pass; int y,s;
+            cout<<"  ID: ";cin>>id;
+            /* FIX: check duplicate */
+            if(findS(studentRoot,id)){ cout<<"  ID already exists.\n"; continue; }
+            cout<<"  Name: ";cin>>name;
+            cout<<"  Email: ";cin>>email;
+            cout<<"  Password: ";cin>>pass;
+            cout<<"  Year: ";cin>>y;
+            cout<<"  Semester: ";cin>>s;
+            studentRoot=insertS(studentRoot,newS(id,name,email,pass,y,s));
+            saveStudents();
+            cout<<"  Student added.\n";
+        }
+
+        else if(ch==2){
+            string id; cout<<"  ID: ";cin>>id;
+            if(!findS(studentRoot,id)){ cout<<"  Student not found.\n"; continue; }
+            studentRoot=deleteS(studentRoot,id);
+            deleteStudentGlobal(id);
+            saveStudents();
+            saveSubjects();
+            cout<<"  Student deleted from all records.\n";
+        }
+
+        else if(ch==3){
+            string id,name,pass;
+            cout<<"  ID: ";cin>>id;
+            if(findT(teacherRoot,id)){ cout<<"  ID already exists.\n"; continue; }
+            cout<<"  Name: ";cin>>name;
+            cout<<"  Password: ";cin>>pass;
+            teacherRoot=insertT(teacherRoot,newT(id,name,pass));
+            saveTeachers();
+            cout<<"  Teacher added.\n";
+        }
+
+        else if(ch==4){
+            string id; cout<<"  ID: ";cin>>id;
+            if(!findT(teacherRoot,id)){ cout<<"  Teacher not found.\n"; continue; }
+            teacherRoot=deleteT(teacherRoot,id);
+            saveTeachers();
+            cout<<"  Teacher deleted.\n";
+        }
