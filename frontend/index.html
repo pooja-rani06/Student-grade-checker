@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SMS — Student Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════ RESET & BASE ═══════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0f14;
+  --paper:#f4f1ea;
+  --warm:#e8e3d8;
+  --accent:#c4472a;
+  --accent2:#2a6fc4;
+  --gold:#c49a2a;
+  --green:#2ac47a;
+  --text:#1a1d24;
+  --muted:#6b7080;
+  --border:#d0c9bc;
+  --card:#fffdf8;
+  --mono:'DM Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --display:'Syne',sans-serif;
+  --shadow:0 2px 8px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.08);
+  --r:6px;
+}
+
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ═══════════════ UTILITY ═══════════════ */
+.hide{display:none!important}
+button{cursor:pointer;font-family:var(--sans)}
+input{font-family:var(--mono)}
+
+/* ═══════════════ GRID BACKGROUND ═══════════════ */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(13,15,20,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(13,15,20,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ═══════════════ SCREEN SYSTEM ═══════════════ */
+.screen{
+  position:relative;
+  z-index:1;
+  animation:fadeIn .35s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ═══════════════ LANDING PAGE ═══════════════ */
+#screen-landing{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+.landing-header{
+  text-align:center;
+  margin-bottom:64px;
+}
+
+.landing-badge{
+  display:inline-block;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--accent);
+  border:1px solid var(--accent);
+  padding:4px 12px;
+  border-radius:2px;
+  margin-bottom:20px;
+}
+
+.landing-title{
+  font-family:var(--display);
+  font-size:clamp(48px,8vw,96px);
+  font-weight:800;
+  line-height:.95;
+  letter-spacing:-.03em;
+  color:var(--ink);
+}
+
+.landing-title span{
+  color:var(--accent);
+  display:block;
+}
+
+.landing-sub{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--muted);
+  margin-top:16px;
+  letter-spacing:.05em;
+}
+
+.role-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  max-width:820px;
+  width:100%;
+}
+
+@media(max-width:640px){.role-cards{grid-template-columns:1fr}}
+
+.role-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:36px 28px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.role-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:3px;
+  background:var(--card-accent,var(--accent));
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .25s ease;
+}
+.role-card:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--shadow-lg);
+  border-color:var(--card-accent,var(--accent));
+}
+.role-card:hover::before{transform:scaleX(1)}
+
+.role-card.student{--card-accent:var(--accent2)}
+.role-card.teacher{--card-accent:var(--gold)}
+.role-card.admin{--card-accent:var(--accent)}
+
+.role-icon{
+  width:48px;height:48px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  margin-bottom:20px;
+  font-size:22px;
+}
+.student .role-icon{background:rgba(42,111,196,.12);color:var(--accent2)}
+.teacher .role-icon{background:rgba(196,154,42,.12);color:var(--gold)}
+.admin .role-icon{background:rgba(196,71,42,.12);color:var(--accent)}
+
+.role-label{
+  font-family:var(--display);
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.role-desc{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.6;
+}
+.role-cta{
+  display:flex;align-items:center;gap:6px;
+  margin-top:24px;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.06em;
+  color:var(--card-accent,var(--accent));
+  font-weight:500;
+}
+
+/* ═══════════════ LOGIN PAGES ═══════════════ */
+#screen-login{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+
+@media(max-width:720px){
+  #screen-login{grid-template-columns:1fr}
+}
+
+.login-art{
+  background:var(--ink);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:48px;
+  position:relative;
+  overflow:hidden;
+}
+@media(max-width:720px){.login-art{display:none}}
+
+.login-art-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+
+.login-art-circle{
+  position:absolute;
+  width:400px;height:400px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--art-color,rgba(196,71,42,.2)) 0%,transparent 70%);
+  right:-80px;top:-80px;
+}
+
+.login-art-text{
+  position:relative;
+  z-index:1;
+}
+.login-art-badge{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--art-color2,var(--accent));
+  margin-bottom:16px;
+}
+.login-art-title{
+  font-family:var(--display);
+  font-size:42px;
+  font-weight:800;
+  color:#fff;
+  line-height:1;
+  letter-spacing:-.02em;
+  margin-bottom:12px;
+}
+.login-art-sub{
+  font-family:var(--mono);
+  font-size:12px;
+  color:rgba(255,255,255,.4);
+  line-height:1.7;
+}
+
+.login-form-pane{
+  background:var(--paper);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:48px;
+}
+
+.login-back{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  background:none;border:none;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:48px;
+  transition:color .15s;
+  padding:0;
+}
+.login-back:hover{color:var(--text)}
+
+.login-heading{
+  font-family:var(--display);
+  font-size:36px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.login-sub{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:40px;
+  letter-spacing:.04em;
+}
+
+.form-group{
+  margin-bottom:20px;
+}
+.form-label{
+  display:block;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.form-input{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:12px 16px;
+  font-size:14px;
+  color:var(--text);
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.form-input:focus{
+  border-color:var(--focus-color,var(--accent));
+  box-shadow:0 0 0 3px var(--focus-shadow,rgba(196,71,42,.12));
+}
+
+.btn-primary{
+  width:100%;
+  padding:14px;
+  background:var(--btn-bg,var(--accent));
+  color:#fff;
+  border:none;
+  border-radius:var(--r);
+  font-family:var(--display);
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.02em;
+  transition:opacity .15s,transform .1s;
+  margin-top:8px;
+}
+.btn-primary:hover{opacity:.9}
+.btn-primary:active{transform:scale(.98)}
+
+.error-msg{
+  background:rgba(196,71,42,.08);
+  border:1px solid rgba(196,71,42,.2);
+  border-left:3px solid var(--accent);
+  padding:10px 14px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--accent);
+  margin-bottom:20px;
+}
+
+/* colour themes per role */
+.theme-student{--focus-color:var(--accent2);--focus-shadow:rgba(42,111,196,.12);--btn-bg:var(--accent2)}
+.theme-teacher{--focus-color:var(--gold);--focus-shadow:rgba(196,154,42,.12);--btn-bg:var(--gold)}
+.theme-admin{--focus-color:var(--accent);--focus-shadow:rgba(196,71,42,.12);--btn-bg:var(--accent)}
+
+/* ═══════════════ DASHBOARD SHELL ═══════════════ */
+#screen-dashboard{min-height:100vh;display:flex;flex-direction:column}
+
+.topbar{
+  background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  height:60px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  position:sticky;top:0;z-index:100;
+}
+.topbar-logo{
+  font-family:var(--display);
+  font-size:18px;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:-.01em;
+}
+.topbar-logo span{color:var(--accent)}
+.topbar-user{
+  display:flex;align-items:center;gap:12px;
+}
+.topbar-badge{
+  font-family:var(--mono);
+  font-size:11px;
+  padding:3px 10px;
+  border-radius:20px;
+  letter-spacing:.08em;
+}
+.topbar-name{
+  font-family:var(--mono);
+  font-size:13px;
+  color:rgba(255,255,255,.7);
+}
+.btn-logout{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.7);
+  padding:6px 14px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.06em;
+  transition:background .15s;
+}
+.btn-logout:hover{background:rgba(255,255,255,.1)}
+
+.dash-body{
+  flex:1;
+  padding:40px 32px;
+  max-width:1100px;
+  margin:0 auto;
+  width:100%;
+}
+
+.section-title{
+  font-family:var(--display);
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.section-sub{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:32px;
+  letter-spacing:.04em;
+}
+
+/* ── STAT CARDS ── */
+.stat-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+  margin-bottom:36px;
+}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px 24px;
+}
+.stat-label{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.stat-value{
+  font-family:var(--display);
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+
+/* ── TABLE ── */
+.table-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  margin-bottom:28px;
+}
+.table-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+}
+.table-title{
+  font-family:var(--display);
+  font-size:16px;
+  font-weight:700;
+}
+table{width:100%;border-collapse:collapse}
+th{
+  font-family:var(--mono);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  padding:10px 24px;
+  text-align:left;
+  background:var(--warm);
+  border-bottom:1px solid var(--border);
+}
+td{
+  padding:12px 24px;
+  font-size:13px;
+  border-bottom:1px solid var(--warm);
+  vertical-align:middle;
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--warm)}
+
+/* ── GRADE BADGES ── */
+.grade{
+  display:inline-block;
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:500;
+  padding:2px 8px;
+  border-radius:3px;
+  letter-spacing:.05em;
+}
+.grade-Ap{background:rgba(42,196,122,.15);color:#197a46}
+.grade-A{background:rgba(42,196,122,.1);color:#2a8a55}
+.grade-B{background:rgba(42,111,196,.12);color:var(--accent2)}
+.grade-C{background:rgba(196,154,42,.12);color:#7a6018}
+.grade-F{background:rgba(196,71,42,.1);color:var(--accent)}
+
+/* ── BUTTONS ── */
+.btn-sm{
+  padding:5px 12px;
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.05em;
+  border:1px solid transparent;
+  transition:background .12s,color .12s;
+}
+.btn-edit{background:rgba(42,111,196,.1);color:var(--accent2);border-color:rgba(42,111,196,.2)}
+.btn-edit:hover{background:rgba(42,111,196,.2)}
+.btn-del{background:rgba(196,71,42,.08);color:var(--accent);border-color:rgba(196,71,42,.2)}
+.btn-del:hover{background:rgba(196,71,42,.18)}
+.btn-add{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--ink);
+  color:#fff;
+  padding:8px 16px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:12px;
+  border:none;
+  letter-spacing:.05em;
+  transition:opacity .15s;
+}
+.btn-add:hover{opacity:.85}
+
+/* ── MODAL ── */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(13,15,20,.6);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  display:grid;place-items:center;
+}
+.modal{
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:36px;
+  width:100%;
+  max-width:440px;
+  box-shadow:var(--shadow-lg);
+  animation:popIn .2s ease;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.modal-title{
+  font-family:var(--display);
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:24px;
+  letter-spacing:-.01em;
+}
+.modal-actions{
+  display:flex;gap:12px;
+  margin-top:24px;
+}
+.btn-cancel{
+  flex:1;
+  padding:11px;
+  background:var(--warm);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text);
+  transition:background .12s;
+}
+.btn-cancel:hover{background:var(--border)}
+.btn-confirm{
+  flex:2;
+  padding:11px;
+  background:var(--ink);
+  border:none;
+  border-radius:var(--r);
+  font-family:var(--display);
+  font-size:14px;
+  font-weight:700;
+  color:#fff;
+  transition:opacity .15s;
+}
+.btn-confirm:hover{opacity:.85}
+
+/* ── SUBJECT SELECTOR (teacher) ── */
+.subj-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+  margin-bottom:32px;
+}
+.subj-tile{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:22px;
+  cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;
+}
+.subj-tile:hover{border-color:var(--gold);box-shadow:0 0 0 3px rgba(196,154,42,.1)}
+.subj-tile-id{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--gold);
+  letter-spacing:.1em;
+  margin-bottom:6px;
+}
+.subj-tile-name{
+  font-family:var(--display);
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.subj-tile-meta{
+  font-size:12px;
+  color:var(--muted);
+  font-family:var(--mono);
+}
+
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  background:none;border:none;
+  cursor:pointer;
+  letter-spacing:.05em;
+  margin-bottom:24px;
+  padding:0;
+  transition:color .15s;
+}
+.back-link:hover{color:var(--text)}
+
+/* ── INLINE MARKS EDITOR ── */
+.marks-inline{
+  display:flex;align-items:center;gap:8px;
+}
+.marks-inline input{
+  width:70px;
+  padding:5px 8px;
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:13px;
+  background:var(--warm);
+}
+.marks-inline button{
+  padding:4px 10px;
+  background:var(--green);
+  color:#fff;
+  border:none;
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:11px;
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--ink);
+  color:#fff;
+  padding:12px 20px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:13px;
+  z-index:500;
+  box-shadow:var(--shadow-lg);
+  animation:slideUp .2s ease;
+  max-width:320px;
+}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--accent)}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{background:var(--warm);border-radius:99px;height:6px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:99px;background:var(--accent2);transition:width .5s ease}
+
+/* ── EMPTY STATE ── */
+.empty{
+  text-align:center;
+  padding:48px 20px;
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:13px;
+}
+.empty-icon{font-size:36px;margin-bottom:12px}
+
+/* ── ADMIN TAB NAV ── */
+.tab-nav{
+  display:flex;
+  gap:4px;
+  margin-bottom:32px;
+  background:var(--warm);
+  padding:4px;
+  border-radius:8px;
+  width:fit-content;
+}
+.tab-btn{
+  padding:8px 20px;
+  border:none;
+  background:none;
+  border-radius:6px;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  transition:background .15s,color .15s;
+}
+.tab-btn.active{
+  background:var(--card);
+  color:var(--text);
+  box-shadow:var(--shadow);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LANDING ═══════════════ -->
+<section id="screen-landing" class="screen">
+  <div class="landing-header">
+    <div class="landing-badge">Academic Portal v2.0</div>
+    <h1 class="landing-title">Student<span>Management</span></h1>
+    <p class="landing-sub">// AVL-tree backed academic record system</p>
+  </div>
+  <div class="role-cards">
+    <div class="role-card student" onclick="showLogin('student')">
+      <div class="role-icon">🎓</div>
+      <div class="role-label">Student</div>
+      <p class="role-desc">View your enrolled subjects, marks, grades and class average.</p>
+      <div class="role-cta">Access Portal →</div>
+    </div>
+    <div class="role-card teacher" onclick="showLogin('teacher')">
+      <div class="role-icon">📚</div>
+      <div class="role-label">Teacher</div>
+      <p class="role-desc">Manage enrollments, assign and update marks for your subjects.</p>
+      <div class="role-cta">Access Portal →</div>
+    </div>
+    <div class="role-card admin" onclick="showLogin('admin')">
+      <div class="role-icon">⚙️</div>
+      <div class="role-label">Admin</div>
+      <p class="role-desc">Full control over students, teachers, and subject assignments.</p>
+      <div class="role-cta">Access Portal →</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<section id="screen-login" class="screen hide">
+  <div class="login-art" id="login-art">
+    <div class="login-art-grid"></div>
+    <div class="login-art-circle"></div>
+    <div class="login-art-text">
+      <div class="login-art-badge" id="art-badge">Student Portal</div>
+      <div class="login-art-title" id="art-title">Access<br>Your<br>Records</div>
+      <div class="login-art-sub" id="art-sub">Powered by AVL-tree data structures.<br>O(log n) lookups on every query.</div>
+    </div>
+  </div>
+  <div class="login-form-pane" id="login-form-pane">
+    <button class="login-back" onclick="showLanding()">← Back to portal</button>
+    <h2 class="login-heading" id="login-heading">Sign In</h2>
+    <p class="login-sub" id="login-sub">Enter your credentials below</p>
+    <div id="login-error" class="error-msg hide"></div>
+    <div class="form-group">
+      <label class="form-label">ID</label>
+      <input class="form-input" id="login-id" type="text" placeholder="e.g. S1" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="login-pass" type="password" placeholder="••••••"/>
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</section>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<section id="screen-dashboard" class="screen hide">
+  <nav class="topbar">
+    <div class="topbar-logo">SM<span>S</span></div>
+    <div class="topbar-user">
+      <span class="topbar-badge" id="dash-role-badge"></span>
+      <span class="topbar-name" id="dash-user-name"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="dash-body" id="dash-body"></div>
+</section>
+
+<!-- ═══════════════ MODAL ═══════════════ -->
+<div class="overlay hide" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add Record</div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="modal-confirm">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div id="toast" class="toast hide"></div>
+
+<script>
+/* ─── CONFIG ─── */
+const API = 'http://localhost:3000/api';
+
+/* ─── STATE ─── */
+let currentRole = '';
+let currentUser = null;
+
+/* ─────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────── */
+function showLanding(){
+  hide('screen-login');
+  hide('screen-dashboard');
+  show('screen-landing');
+}
+
+function showLogin(role){
+  currentRole = role;
+  hide('screen-landing');
+  hide('screen-dashboard');
+  show('screen-login');
+  hide('login-error');
+  qs('#login-id').value='';
+  qs('#login-pass').value='';
+
+  const themes = {student:'theme-student',teacher:'theme-teacher',admin:'theme-admin'};
+  const pane = qs('#login-form-pane');
+  pane.className = 'login-form-pane ' + themes[role];
+
+  const art = qs('#login-art');
+  if(role==='student'){
+    art.style.setProperty('--art-color','rgba(42,111,196,.25)');
+    art.style.setProperty('--art-color2','#6aadff');
+    qs('#art-badge').textContent='Student Portal';
+    qs('#art-title').innerHTML='Access<br>Your<br>Records';
+    qs('#login-heading').textContent='Student Login';
+    qs('#login-sub').textContent='Use your student ID and password';
+    qs('#login-id').placeholder='e.g. S1';
+  } else if(role==='teacher'){
+    art.style.setProperty('--art-color','rgba(196,154,42,.25)');
+    art.style.setProperty('--art-color2','#f0c84a');
+    qs('#art-badge').textContent='Teacher Portal';
+    qs('#art-title').innerHTML='Manage<br>Your<br>Classes';
+    qs('#login-heading').textContent='Teacher Login';
+    qs('#login-sub').textContent='Use your teacher ID and password';
+    qs('#login-id').placeholder='e.g. T1';
+  } else {
+    art.style.setProperty('--art-color','rgba(196,71,42,.25)');
+    art.style.setProperty('--art-color2','#ff7a5a');
+    qs('#art-badge').textContent='Admin Console';
+    qs('#art-title').innerHTML='System<br>Control<br>Panel';
+    qs('#login-heading').textContent='Admin Login';
+    qs('#login-sub').textContent='Restricted access — authorised only';
+    qs('#login-id').placeholder='admin';
+  }
+
+  qs('#login-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+}
+
+/* ─────────────────────────────────────
+   LOGIN
+───────────────────────────────────── */
+async function doLogin(){
+  const id = qs('#login-id').value.trim();
+  const pass = qs('#login-pass').value.trim();
+  if(!id||!pass){ showError('login-error','Please fill in all fields'); return; }
+
+  const btn = qs('#login-btn');
+  btn.textContent='Signing in…'; btn.disabled=true;
+
+  try{
+    const res = await fetch(`${API}/login/${currentRole}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({id,password:pass})
+    });
+    const data = await res.json();
+    btn.textContent='Sign In'; btn.disabled=false;
+
+    if(!res.ok){ showError('login-error',data.error||'Login failed'); return; }
+
+    hide('screen-login');
+    show('screen-dashboard');
+
+    if(currentRole==='student'){
+      currentUser = data.student;
+      await renderStudentDash();
+    } else if(currentRole==='teacher'){
+      currentUser = data.teacher;
+      await renderTeacherDash();
+    } else {
+      currentUser = {id:'admin',name:'Administrator'};
+      await renderAdminDash();
+    }
+
+    setTopbar();
+  } catch(e){
+    btn.textContent='Sign In'; btn.disabled=false;
+    showError('login-error','Cannot reach server. Is the backend running?');
+  }
+}
+
+function setTopbar(){
+  const colors={student:'background:rgba(42,111,196,.2);color:#6aadff',teacher:'background:rgba(196,154,42,.2);color:#f0c84a',admin:'background:rgba(196,71,42,.2);color:#ff8a6a'};
+  qs('#dash-role-badge').style.cssText=colors[currentRole];
+  qs('#dash-role-badge').textContent=currentRole.toUpperCase();
+  qs('#dash-user-name').textContent=currentUser.name||currentUser.id;
+}
+
+/* ─────────────────────────────────────
+   STUDENT DASHBOARD
+───────────────────────────────────── */
+async function renderStudentDash(){
+  const res = await fetch(`${API}/student/${currentUser.id}/dashboard`);
+  const {student,subjects} = await res.json();
+  const totalAvg = subjects.length ? (subjects.reduce((a,s)=>a+s.marks,0)/subjects.length).toFixed(1) : '—';
+
+  let html = `
+    <h2 class="section-title">Hello, ${student.name}</h2>
+    <p class="section-sub">Year ${student.year} · Semester ${student.semester} · ${student.email}</p>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Subjects</div>
+        <div class="stat-value" style="color:var(--accent2)">${subjects.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average</div>
+        <div class="stat-value" style="color:var(--green)">${totalAvg}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Overall Grade</div>
+        <div class="stat-value" style="font-size:24px">${subjects.length?gradeLabel(+totalAvg):'—'}</div>
+      </div>
+    </div>
+  `;
+
+  if(subjects.length===0){
+    html += `<div class="empty"><div class="empty-icon">📋</div>No enrolled subjects found for this semester.</div>`;
+  } else {
+    html += `<div class="table-card"><div class="table-header"><span class="table-title">Enrolled Subjects</span></div>
+      <table><thead><tr><th>Subject</th><th>Name</th><th>Marks</th><th>Grade</th><th>Class Avg</th><th>Vs Class</th></tr></thead><tbody>`;
+    subjects.forEach(s=>{
+      const diff = (s.marks - s.classAvg).toFixed(1);
+      const diffColor = diff>=0?'color:var(--green)':'color:var(--accent)';
+      const pct = Math.round(s.marks);
+      html += `<tr>
+        <td><span style="font-family:var(--mono);color:var(--accent2)">${s.subjectId}</span></td>
+        <td>${s.subjectName}</td>
+        <td>
+          <strong style="font-family:var(--mono)">${s.marks}</strong>
+          <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </td>
+        <td><span class="grade ${gradeClass(s.grade)}">${s.grade}</span></td>
+        <td style="font-family:var(--mono)">${s.classAvg}</td>
+        <td style="font-family:var(--mono);${diffColor}">${diff>=0?'+':''}${diff}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+
+  qs('#dash-body').innerHTML=html;
+}
+
+/* ─────────────────────────────────────
+   TEACHER DASHBOARD
+───────────────────────────────────── */
+async function renderTeacherDash(view, subjId){
+  if(view==='subjects' || !view){
+    const res = await fetch(`${API}/teacher/${currentUser.id}/subjects`);
+    const {subjects} = await res.json();
+
+    let html = `<h2 class="section-title">My Subjects</h2>
+      <p class="section-sub">${subjects.length} subject(s) assigned to you</p>
+      <div class="subj-grid">`;
+
+    if(subjects.length===0){
+      html = `<div class="empty"><div class="empty-icon">📚</div>No subjects assigned.</div>`;
+    } else {
+      subjects.forEach(s=>{
+        html += `<div class="subj-tile" onclick="renderTeacherDash('enrollments','${s.id}')">
+          <div class="subj-tile-id">${s.id}</div>
+          <div class="subj-tile-name">${s.name}</div>
+          <div class="subj-tile-meta">Year ${s.year} · Sem ${s.semester}</div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    qs('#dash-body').innerHTML=html;
+
+  } else if(view==='enrollments'){
+    const res = await fetch(`${API}/teacher/subject/${subjId}/enrollments`);
+    const {subject,enrollments,classAvg} = await res.json();
+
+    let html = `
+      <button class="back-link" onclick="renderTeacherDash('subjects')">← Back to subjects</button>
+      <h2 class="section-title">${subject.name}</h2>
+      <p class="section-sub">Subject ${subject.id} · Year ${subject.year} · Semester ${subject.semester}</p>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-label">Enrolled</div><div class="stat-value" style="color:var(--gold)">${enrollments.length}</div></div>
+        <div class="stat-card"><div class="stat-label">Class Average</div><div class="stat-value" style="color:var(--green)">${classAvg}</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Enrollments</span>
+          <button class="btn-add" onclick="openAddMarksModal('${subject.id}')">+ Add Student</button>
+        </div>
+        <table><thead><tr><th>Student ID</th><th>Name</th><th>Marks</th><th>Grade</th><th>Actions</th></tr></thead><tbody>`;
+
+    if(enrollments.length===0){
+      html += `<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div>No enrollments yet.</div></td></tr>`;
+    } else {
+      enrollments.forEach(e=>{
+        html += `<tr id="row-${e.studentId}">
+          <td style="font-family:var(--mono);color:var(--accent2)">${e.studentId}</td>
+          <td>${e.name}</td>
+          <td>
+            <div class="marks-inline" id="marks-view-${e.studentId}">
+              <span style="font-family:var(--mono)">${e.marks}</span>
+              <button class="btn-sm btn-edit" onclick="toggleEdit('${e.studentId}','${e.marks}','${subject.id}')">Edit</button>
+            </div>
+            <div class="marks-inline hide" id="marks-edit-${e.studentId}">
+              <input type="number" id="marks-input-${e.studentId}" value="${e.marks}" min="0" max="100"/>
+              <button onclick="saveMarks('${e.studentId}','${subject.id}')">✓</button>
+              <button onclick="toggleEdit('${e.studentId}',null,null)" style="background:var(--muted)">✕</button>
+            </div>
+          </td>
+          <td><span class="grade ${gradeClass(e.grade)}">${e.grade}</span></td>
+          <td><button class="btn-sm btn-del" onclick="deleteEnrollment('${e.studentId}','${subject.id}')">Remove</button></td>
+        </tr>`;
+      });
+    }
+    html += '</tbody></table></div>';
+    qs('#dash-body').innerHTML=html;
+  }
+}
+
+function toggleEdit(sid, marks, subjId){
+  const view = qs(`#marks-view-${sid}`);
+  const edit = qs(`#marks-edit-${sid}`);
+  if(view.classList.contains('hide')){
+    view.classList.remove('hide'); edit.classList.add('hide');
+  } else {
+    view.classList.add('hide'); edit.classList.remove('hide');
+    qs(`#marks-input-${sid}`).focus();
+  }
+}
+
+async function saveMarks(sid, subjId){
+  const val = +qs(`#marks-input-${sid}`).value;
+  if(val<0||val>100){ showToast('Marks must be 0–100','error'); return; }
+  await fetch(`${API}/teacher/subject/${subjId}/marks/${sid}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({marks:val})});
+  showToast('Marks updated');
+  renderTeacherDash('enrollments',subjId);
+}
+
+async function deleteEnrollment(sid,subjId){
+  if(!confirm(`Remove student ${sid} from this subject?`)) return;
+  await fetch(`${API}/teacher/subject/${subjId}/enrollment/${sid}`,{method:'DELETE'});
+  showToast('Enrollment removed');
+  renderTeacherDash('enrollments',subjId);
+}
+
+function openAddMarksModal(subjId){
+  qs('#modal-title').textContent='Add Student Marks';
+  qs('#modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Student ID</label><input class="form-input" id="am-sid" placeholder="e.g. S3"/></div>
+    <div class="form-group"><label class="form-label">Marks (0–100)</label><input class="form-input" type="number" id="am-marks" min="0" max="100" value="0"/></div>
+  `;
+  qs('#modal-confirm').onclick = async ()=>{
+    const sid = qs('#am-sid').value.trim();
+    const m = +qs('#am-marks').value;
+    if(!sid){ showToast('Enter a student ID','error'); return; }
+    const res = await fetch(`${API}/teacher/subject/${subjId}/marks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({studentId:sid,marks:m})});
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error||'Error','error'); return; }
+    showToast('Marks added');
+    closeModal();
+    renderTeacherDash('enrollments',subjId);
+  };
+  show('modal-overlay');
+}
+
+/* ─────────────────────────────────────
+   ADMIN DASHBOARD
+───────────────────────────────────── */
+let adminTab = 'students';
+
+async function renderAdminDash(tab){
+  if(tab) adminTab=tab;
+  const tabs = ['students','teachers','subjects'];
+
+  let html = `
+    <h2 class="section-title">Admin Panel</h2>
+    <p class="section-sub">System-wide management console</p>
+    <div class="tab-nav">
+      ${tabs.map(t=>`<button class="tab-btn${adminTab===t?' active':''}" onclick="renderAdminDash('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+    </div>
+  `;
+
+  if(adminTab==='students'){
+    const res = await fetch(`${API}/admin/students`);
+    const {students} = await res.json();
+    html += `<div class="table-card">
+      <div class="table-header"><span class="table-title">All Students (${students.length})</span>
+      <button class="btn-add" onclick="openAddStudentModal()">+ Add Student</button></div>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Year</th><th>Semester</th><th>Action</th></tr></thead><tbody>`;
+    if(!students.length) html+=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎓</div>No students.</div></td></tr>`;
+    students.forEach(s=>{
+      html+=`<tr>
+        <td style="font-family:var(--mono);color:var(--accent2)">${s.id}</td>
+        <td>${s.name}</td><td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${s.email}</td>
+        <td>${s.year}</td><td>${s.semester}</td>
+        <td><button class="btn-sm btn-del" onclick="adminDeleteStudent('${s.id}')">Delete</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table></div>';
+  }
+
+  else if(adminTab==='teachers'){
+    const res = await fetch(`${API}/admin/teachers`);
+    const {teachers} = await res.json();
+    html += `<div class="table-card">
+      <div class="table-header"><span class="table-title">All Teachers (${teachers.length})</span>
+      <button class="btn-add" onclick="openAddTeacherModal()">+ Add Teacher</button></div>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Action</th></tr></thead><tbody>`;
+    if(!teachers.length) html+=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">📚</div>No teachers.</div></td></tr>`;
+    teachers.forEach(t=>{
+      html+=`<tr>
+        <td style="font-family:var(--mono);color:var(--gold)">${t.id}</td>
+        <td>${t.name}</td>
+        <td><button class="btn-sm btn-del" onclick="adminDeleteTeacher('${t.id}')">Delete</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table></div>';
+  }
+
+  else if(adminTab==='subjects'){
+    const res = await fetch(`${API}/admin/subjects`);
+    const {subjects} = await res.json();
+    html += `<div class="table-card">
+      <div class="table-header"><span class="table-title">All Subjects (${subjects.length})</span>
+      <button class="btn-add" onclick="openAddSubjectModal()">+ Add Subject</button></div>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Teacher</th><th>Year</th><th>Sem</th><th>Action</th></tr></thead><tbody>`;
+    if(!subjects.length) html+=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No subjects.</div></td></tr>`;
+    subjects.forEach(s=>{
+      html+=`<tr>
+        <td style="font-family:var(--mono);color:var(--accent)">${s.id}</td>
+        <td>${s.name}</td>
+        <td style="font-family:var(--mono);color:var(--muted)">${s.teacherId}</td>
+        <td>${s.year}</td><td>${s.semester}</td>
+        <td><button class="btn-sm btn-del" onclick="adminDeleteSubject('${s.id}')">Delete</button></td>
+      </tr>`;
+    });
+    html+='</tbody></table></div>';
+  }
+
+  qs('#dash-body').innerHTML=html;
+}
+
+/* ─── admin modals ─── */
+function openAddStudentModal(){
+  qs('#modal-title').textContent='Add Student';
+  qs('#modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">ID</label><input class="form-input" id="as-id" placeholder="S3"/></div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="as-name" placeholder="Full Name"/></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="as-email" placeholder="student@uni.com"/></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="as-pass"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Year</label><input class="form-input" type="number" id="as-year" min="1" max="4" value="1"/></div>
+      <div class="form-group"><label class="form-label">Semester</label><input class="form-input" type="number" id="as-sem" min="1" max="8" value="1"/></div>
+    </div>`;
+  qs('#modal-confirm').onclick = async ()=>{
+    const body={id:v('as-id'),name:v('as-name'),email:v('as-email'),password:v('as-pass'),year:+v('as-year'),semester:+v('as-sem')};
+    if(!body.id||!body.name||!body.password){showToast('Fill required fields','error');return;}
+    const res=await fetch(`${API}/admin/students`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await res.json();
+    if(!res.ok){showToast(d.error||'Error','error');return;}
+    showToast('Student added'); closeModal(); renderAdminDash('students');
+  };
+  show('modal-overlay');
+}
+
+function openAddTeacherModal(){
+  qs('#modal-title').textContent='Add Teacher';
+  qs('#modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">ID</label><input class="form-input" id="at-id" placeholder="T2"/></div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="at-name" placeholder="Prof. Name"/></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="at-pass"/></div>`;
+  qs('#modal-confirm').onclick = async ()=>{
+    const body={id:v('at-id'),name:v('at-name'),password:v('at-pass')};
+    if(!body.id||!body.name||!body.password){showToast('Fill required fields','error');return;}
+    const res=await fetch(`${API}/admin/teachers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await res.json();
+    if(!res.ok){showToast(d.error||'Error','error');return;}
+    showToast('Teacher added'); closeModal(); renderAdminDash('teachers');
+  };
+  show('modal-overlay');
+}
+
+function openAddSubjectModal(){
+  qs('#modal-title').textContent='Add Subject';
+  qs('#modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Subject ID</label><input class="form-input" id="sub-id" placeholder="C2"/></div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="sub-name" placeholder="Data Structures"/></div>
+    <div class="form-group"><label class="form-label">Teacher ID</label><input class="form-input" id="sub-tid" placeholder="T1"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Year</label><input class="form-input" type="number" id="sub-year" value="1"/></div>
+      <div class="form-group"><label class="form-label">Semester</label><input class="form-input" type="number" id="sub-sem" value="1"/></div>
+    </div>`;
+  qs('#modal-confirm').onclick = async ()=>{
+    const body={id:v('sub-id'),name:v('sub-name'),teacherId:v('sub-tid'),year:+v('sub-year'),semester:+v('sub-sem')};
+    if(!body.id||!body.name||!body.teacherId){showToast('Fill required fields','error');return;}
+    const res=await fetch(`${API}/admin/subjects`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await res.json();
+    if(!res.ok){showToast(d.error||'Error','error');return;}
+    showToast('Subject added'); closeModal(); renderAdminDash('subjects');
+  };
+  show('modal-overlay');
+}
+
+async function adminDeleteStudent(id){
+  if(!confirm(`Delete student ${id} and all their enrollments?`)) return;
+  await fetch(`${API}/admin/students/${id}`,{method:'DELETE'});
+  showToast('Student deleted'); renderAdminDash('students');
+}
+async function adminDeleteTeacher(id){
+  if(!confirm(`Delete teacher ${id}?`)) return;
+  await fetch(`${API}/admin/teachers/${id}`,{method:'DELETE'});
+  showToast('Teacher deleted'); renderAdminDash('teachers');
+}
+async function adminDeleteSubject(id){
+  if(!confirm(`Delete subject ${id}?`)) return;
+  await fetch(`${API}/admin/subjects/${id}`,{method:'DELETE'});
+  showToast('Subject deleted'); renderAdminDash('subjects');
+}
+
+/* ─────────────────────────────────────
+   HELPERS
+───────────────────────────────────── */
+function logout(){ currentUser=null; currentRole=''; hide('screen-dashboard'); showLanding(); }
+function show(id){ qs('#'+id).classList.remove('hide'); }
+function hide(id){ qs('#'+id).classList.add('hide'); }
+function qs(sel){ return document.querySelector(sel); }
+function v(id){ return (qs('#'+id)||{}).value||''; }
+function showError(id,msg){ const el=qs('#'+id); el.textContent=msg; el.classList.remove('hide'); }
+function closeModal(){ hide('modal-overlay'); }
+
+let toastTimer;
+function showToast(msg, type='success'){
+  const el=qs('#toast');
+  el.textContent=msg;
+  el.className=`toast ${type}`;
+  el.classList.remove('hide');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.add('hide'),3000);
+}
+
+function gradeLabel(m){
+  if(m>=90)return'A+';if(m>=80)return'A';if(m>=70)return'B';if(m>=60)return'C';return'F';
+}
+function gradeClass(g){
+  const map={'A+':'grade-Ap','A':'grade-A','B':'grade-B','C':'grade-C','F':'grade-F'};
+  return map[g]||'grade-F';
+}
+</script>
+</body>
+</html>
