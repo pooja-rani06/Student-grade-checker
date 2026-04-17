@@ -1,27 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 /*  STRUCTURES  */
-
 struct Student {
     string id,name,email,password;
     int year,semester,height;
     Student *left,*right;
 };
-
 struct Teacher {
     string id,name,password;
     int height;
     Teacher *left,*right;
 };
-
 struct Enrollment {
     string studentId;
     double marks;
     int height;
     Enrollment *left,*right;
 };
-
 struct Subject {
     string id,name,teacherId;
     int year,semester;
@@ -31,20 +26,13 @@ struct Subject {
 Student* studentRoot=NULL;
 Teacher* teacherRoot=NULL;
 Subject* subjectHead=NULL;
-
 /*  UTIL  */
-
-/* --- Student height helpers --- */
 int hS(Student* n){return n?n->height:0;}
-/* --- Teacher height helpers --- */
 int hT(Teacher* n){return n?n->height:0;}
-/* --- Enrollment height helpers --- */
 int hE(Enrollment* n){return n?n->height:0;}
-
 int mx(int a,int b){return max(a,b);}
 
 /*  GRADE  */
-
 string getGrade(double m){
     if(m>=90) return "A+";
     if(m>=80) return "A";
@@ -52,9 +40,7 @@ string getGrade(double m){
     if(m>=60) return "C";
     return "F";
 }
-
 /*  CREATE  */
-
 Student* newS(string id,string name,string email,string pass,int y,int s){
     return new Student{id,name,email,pass,y,s,1,NULL,NULL};
 }
@@ -67,9 +53,7 @@ Enrollment* newE(string id,double m){
 Subject* newSub(string id,string name,string tid,int y,int s){
     return new Subject{id,name,tid,y,s,NULL,NULL};
 }
-
 /*  AVL STUDENT  */
-
 Student* rRS(Student* y){
     Student* x=y->left; Student* t=x->right;
     x->right=y; y->left=t;
@@ -84,9 +68,7 @@ Student* lRS(Student* x){
     y->height=1+mx(hS(y->left),hS(y->right));
     return y;
 }
-
 int bfS(Student* n){return n?hS(n->left)-hS(n->right):0;}
-
 Student* insertS(Student* r,Student* s){
     if(!r) return s;
     if(s->id<r->id) r->left=insertS(r->left,s);
@@ -108,14 +90,11 @@ Student* findS(Student* r,string id){
     if(id<r->id) return findS(r->left,id);
     return findS(r->right,id);
 }
-
 /*DELETE STUDENT (AVL)  */
-
 Student* minNodeS(Student* r){
     while(r->left) r=r->left;
     return r;
 }
-
 Student* deleteS(Student* r,string id){
     if(!r) return NULL;
     if(id<r->id) r->left=deleteS(r->left,id);
@@ -137,7 +116,6 @@ Student* deleteS(Student* r,string id){
         r->semester = t->semester;
         r->right=deleteS(r->right,t->id);
     }
-
     /* Re-balance after deletion */
     r->height=1+mx(hS(r->left),hS(r->right));
     int b=bfS(r);
@@ -148,8 +126,7 @@ Student* deleteS(Student* r,string id){
     if(b<-1 && bfS(r->right)>0){r->right=rRS(r->right);return lRS(r);}
     return r;
 }
-*  AVL TEACHER  */
-
+/*  AVL TEACHER  */
 Teacher* rRT(Teacher* y){
     Teacher* x=y->left; Teacher* t=x->right;
     x->right=y; y->left=t;
@@ -157,7 +134,6 @@ Teacher* rRT(Teacher* y){
     x->height=1+mx(hT(x->left),hT(x->right));
     return x;
 }
-
 Teacher* lRT(Teacher* x){
     Teacher* y=x->right; Teacher* t=y->left;
     y->left=x; x->right=t;
@@ -165,9 +141,7 @@ Teacher* lRT(Teacher* x){
     y->height=1+mx(hT(y->left),hT(y->right));
     return y;
 }
-
 int bfT(Teacher* n){return n?hT(n->left)-hT(n->right):0;}
-
 Teacher* insertT(Teacher* r,Teacher* t){
     if(!r) return t;
     if(t->id<r->id) r->left=insertT(r->left,t);
@@ -190,14 +164,11 @@ Teacher* findT(Teacher* r,string id){
     if(id<r->id) return findT(r->left,id);
     return findT(r->right,id);
 }
-
-/* ================= DELETE TEACHER (AVL) ================= */
-
+/*  DELETE TEACHER (AVL)  */
 Teacher* minNodeT(Teacher* r){
     while(r->left) r=r->left;
     return r;
 }
-
 Teacher* deleteT(Teacher* r,string id){
     if(!r) return NULL;
     if(id<r->id) r->left=deleteT(r->left,id);
@@ -226,9 +197,7 @@ Teacher* deleteT(Teacher* r,string id){
     if(b<-1 && bfT(r->right)>0){r->right=rRT(r->right);return lRT(r);}
     return r;
 }
-
 // AVL ENROLLMENT //
-
 Enrollment* rRE(Enrollment* y){
     Enrollment* x=y->left; Enrollment* t=x->right;
     x->right=y; y->left=t;
@@ -236,7 +205,6 @@ Enrollment* rRE(Enrollment* y){
     x->height=1+mx(hE(x->left),hE(x->right));
     return x;
 }
-
 Enrollment* lRE(Enrollment* x){
     Enrollment* y=x->right; Enrollment* t=y->left;
     y->left=x; x->right=t;
@@ -244,7 +212,6 @@ Enrollment* lRE(Enrollment* x){
     y->height=1+mx(hE(y->left),hE(y->right));
     return y;
 }
-
 int bfE(Enrollment* n){return n?hE(n->left)-hE(n->right):0;}
 
 Enrollment* insertE(Enrollment* r,string id,double m){
@@ -269,14 +236,11 @@ Enrollment* findE(Enrollment* r,string id){
     if(id<r->studentId) return findE(r->left,id);
     return findE(r->right,id);
 }
-
 /*  DELETE ENROLLMENT (AVL)  */
-
 Enrollment* minNodeE(Enrollment* r){
     while(r->left) r=r->left;
     return r;
 }
-
 Enrollment* deleteE(Enrollment* r,string id){
     if(!r) return NULL;
     if(id<r->studentId) r->left=deleteE(r->left,id);
@@ -304,13 +268,10 @@ Enrollment* deleteE(Enrollment* r,string id){
     if(b<-1 && bfE(r->right)>0){r->right=rRE(r->right);return lRE(r);}
     return r;
 }
-
 /*  SUBJECT (Linked List)  */
-
 void addSubject(Subject*& h,Subject* s){
     s->next=h; h=s;
 }
-
 void deleteSubject(string id){
     Subject *curr=subjectHead, *prev=NULL;
     while(curr){
@@ -342,9 +303,7 @@ void deleteStudentGlobal(string id){
         c=c->next;
     }
 }
-
 /*  AVG  */
-
 pair<double,int> avg(Enrollment* r){
     if(!r) return {0,0};
     auto L=avg(r->left),R=avg(r->right);
@@ -359,7 +318,6 @@ void printE(Enrollment* r){
     cout<<"  "<<r->studentId<<" ("<<name<<")"<<" -> "<<r->marks<<" ("<<getGrade(r->marks)<<")\n";
     printE(r->right);
 }
-
 /*  FILE SAVE  */
 void saveStudents(){
     ofstream f("students.txt");
@@ -372,7 +330,6 @@ void saveStudents(){
     };
     dfs(studentRoot);
 }
-
 void saveTeachers(){
     ofstream f("teachers.txt");
     function<void(Teacher*)> dfs=[&](Teacher* r){
@@ -383,7 +340,6 @@ void saveTeachers(){
     };
     dfs(teacherRoot);
 }
-
 void saveSubjects(){
     ofstream f("subjects.txt");
     Subject* c=subjectHead;
@@ -408,7 +364,6 @@ void loadStudents(){
     while(f>>id>>name>>email>>pass>>y>>s)
         studentRoot=insertS(studentRoot,newS(id,name,email,pass,y,s));
 }
-
 void loadTeachers(){
     ifstream f("teachers.txt");
     if(!f) return;
@@ -446,9 +401,7 @@ double inputMarks(){
         cout<<"  Invalid marks. Enter value between 0 and 100: ";
     }
 }
-
 /*  MENUS  */
-
 void studentMenu(Student* s){
     cout<<"\n+------------------------------------------+\n";
     cout<<"  Welcome, "<<s->name<<"  (ID: "<<s->id<<")\n";
@@ -475,7 +428,6 @@ void studentMenu(Student* s){
     if(!found) cout<<"  No enrollments found.\n";
     cout<<"+------------------------------------------+\n";
 }
-
 void teacherMenu(Teacher* t){
     while(true){
         cout<<"\n+------------------------------------------+\n";
@@ -561,7 +513,6 @@ void teacherMenu(Teacher* t){
     }
 }
 /*  ADMIN  */
-
 void adminMenu(){
     while(true){
         cout<<"\n+------------------------------------------+\n";
@@ -682,14 +633,12 @@ else if(ch==5){
     }
 }
 /*  MAIN  */
-
 int main(){
 
     /* Load persisted data first */
     loadStudents();
     loadTeachers();
     loadSubjects();
-
     /* Seed only if files were empty (first run) */
     if(!studentRoot){
         studentRoot=insertS(studentRoot,newS("S1","Amit","amit@uni.com","123",2,3));
@@ -746,6 +695,5 @@ int main(){
             adminMenu();
         }
     }
-
     return 0;
 }
