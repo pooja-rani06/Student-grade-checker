@@ -400,3 +400,42 @@ void saveSubjects(){
         c=c->next;
     }
 }
+/* ================= FILE LOAD ================= */
+
+void loadStudents(){
+    ifstream f("students.txt");
+    if(!f) return;
+    string id,name,email,pass; int y,s;
+    while(f>>id>>name>>email>>pass>>y>>s)
+        studentRoot=insertS(studentRoot,newS(id,name,email,pass,y,s));
+}
+
+void loadTeachers(){
+    ifstream f("teachers.txt");
+    if(!f) return;
+    string id,name,pass;
+    while(f>>id>>name>>pass)
+        teacherRoot=insertT(teacherRoot,newT(id,name,pass));
+}
+
+void loadSubjects(){
+    ifstream f("subjects.txt");
+    if(!f) return;
+    string line;
+    while(getline(f,line)){
+        if(line.empty()) continue;
+        istringstream ss(line);
+        string id,name,tid; int y,s;
+        ss>>id>>name>>tid>>y>>s;
+        Subject* sub=newSub(id,name,tid,y,s);
+        string token;
+        while(ss>>token){
+            size_t pos=token.find(':');
+            if(pos==string::npos) continue;
+            string sid=token.substr(0,pos);
+            double m=stod(token.substr(pos+1));
+            sub->root=insertE(sub->root,sid,m);
+        }
+        addSubject(subjectHead,sub);
+    }
+}
