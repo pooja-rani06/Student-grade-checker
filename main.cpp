@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/* ================= STRUCTURES ================= */
+/*  STRUCTURES  */
 
 struct Student {
     string id,name,email,password;
@@ -32,7 +32,7 @@ Student* studentRoot=NULL;
 Teacher* teacherRoot=NULL;
 Subject* subjectHead=NULL;
 
-/* ================= UTIL ================= */
+/*  UTIL  */
 
 /* --- Student height helpers --- */
 int hS(Student* n){return n?n->height:0;}
@@ -43,7 +43,7 @@ int hE(Enrollment* n){return n?n->height:0;}
 
 int mx(int a,int b){return max(a,b);}
 
-/* ================= GRADE ================= */
+/*  GRADE  */
 
 string getGrade(double m){
     if(m>=90) return "A+";
@@ -53,7 +53,7 @@ string getGrade(double m){
     return "F";
 }
 
-/* ================= CREATE ================= */
+/*  CREATE  */
 
 Student* newS(string id,string name,string email,string pass,int y,int s){
     return new Student{id,name,email,pass,y,s,1,NULL,NULL};
@@ -68,7 +68,7 @@ Subject* newSub(string id,string name,string tid,int y,int s){
     return new Subject{id,name,tid,y,s,NULL,NULL};
 }
 
-/* ================= AVL STUDENT ================= */
+/*  AVL STUDENT  */
 
 Student* rRS(Student* y){
     Student* x=y->left; Student* t=x->right;
@@ -100,5 +100,51 @@ Student* insertS(Student* r,Student* s){
     if(b<-1 && s->id>r->right->id) return lRS(r);
     if(b>1 && s->id>r->left->id){r->left=lRS(r->left);return rRS(r);}
     if(b<-1 && s->id<r->right->id){r->right=rRS(r->right);return lRS(r);}
+    return r;
+}
+Student* findS(Student* r,string id){
+    if(!r) return NULL;
+    if(id==r->id) return r;
+    if(id<r->id) return findS(r->left,id);
+    return findS(r->right,id);
+}
+
+/*DELETE STUDENT (AVL)  */
+
+Student* minNodeS(Student* r){
+    while(r->left) r=r->left;
+    return r;
+}
+
+Student* deleteS(Student* r,string id){
+    if(!r) return NULL;
+    if(id<r->id) r->left=deleteS(r->left,id);
+    else if(id>r->id) r->right=deleteS(r->right,id);
+    else{
+        if(!r->left||!r->right){
+            Student* t=r->left?r->left:r->right;
+            /* FIX: do not shallow-copy node; just unlink and free */
+            delete r;
+            return t;
+        }
+        /* In-order successor: copy only data fields, not tree pointers */
+        Student* t=minNodeS(r->right);
+        r->id       = t->id;
+        r->name     = t->name;
+        r->email    = t->email;
+        r->password = t->password;
+        r->year     = t->year;
+        r->semester = t->semester;
+        r->right=deleteS(r->right,t->id);
+    }
+
+    /* Re-balance after deletion */
+    r->height=1+mx(hS(r->left),hS(r->right));
+    int b=bfS(r);
+
+    if(b>1 && bfS(r->left)>=0) return rRS(r);
+    if(b>1 && bfS(r->left)<0){r->left=lRS(r->left);return rRS(r);}
+    if(b<-1 && bfS(r->right)<=0) return lRS(r);
+    if(b<-1 && bfS(r->right)>0){r->right=rRS(r->right);return lRS(r);}
     return r;
 }
