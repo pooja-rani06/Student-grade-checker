@@ -148,7 +148,7 @@ Student* deleteS(Student* r,string id){
     if(b<-1 && bfS(r->right)>0){r->right=rRS(r->right);return lRS(r);}
     return r;
 }
-* ================= AVL TEACHER ================= */
+*  AVL TEACHER  */
 
 Teacher* rRT(Teacher* y){
     Teacher* x=y->left; Teacher* t=x->right;
@@ -400,8 +400,7 @@ void saveSubjects(){
         c=c->next;
     }
 }
-/* ================= FILE LOAD ================= */
-
+/*  FILE LOAD  */
 void loadStudents(){
     ifstream f("students.txt");
     if(!f) return;
@@ -417,7 +416,6 @@ void loadTeachers(){
     while(f>>id>>name>>pass)
         teacherRoot=insertT(teacherRoot,newT(id,name,pass));
 }
-
 void loadSubjects(){
     ifstream f("subjects.txt");
     if(!f) return;
@@ -439,8 +437,7 @@ void loadSubjects(){
         addSubject(subjectHead,sub);
     }
 }
-/* ================= INPUT HELPERS ================= */
-
+/*  INPUT HELPERS  */
 double inputMarks(){
     double m;
     while(true){
@@ -450,7 +447,7 @@ double inputMarks(){
     }
 }
 
-/* ================= MENUS ================= */
+/*  MENUS  */
 
 void studentMenu(Student* s){
     cout<<"\n+------------------------------------------+\n";
@@ -563,7 +560,7 @@ void teacherMenu(Teacher* t){
         }
     }
 }
-/* ================= ADMIN ================= */
+/*  ADMIN  */
 
 void adminMenu(){
     while(true){
@@ -684,7 +681,7 @@ else if(ch==5){
         }
     }
 }
-/* ================= MAIN ================= */
+/*  MAIN  */
 
 int main(){
 
